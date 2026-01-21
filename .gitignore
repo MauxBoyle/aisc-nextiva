@@ -1,4 +1,6 @@
 .env
 MCDR Archive
 TenPhoneLookup.*
-
+MCDR*
+NextivaCallData.csv
+TenPhoneLookup
