@@ -1,4 +1,4 @@
-import sys
+import sys 
 import csv
 from itertools import batched
 
