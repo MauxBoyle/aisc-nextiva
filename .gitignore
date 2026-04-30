@@ -6,3 +6,5 @@ NextivaCallData.csv
 
 REDACTED.txt
 .venv/
+*.csv
+*.txt

@@ -7,10 +7,11 @@ from itertools import batched
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+import flatten_to_wide
 
 # --- CONFIGURATION ---
 EMAIL_USER = 'boyle@aisc.org'
-EMAIL_PASS = 'REDACTED' # Use a Google App Password, not your regular password
+EMAIL_PASS = 'bjrl ujho lkal kxqv' # Use a Google App Password, not your regular password
 IMAP_SERVER = 'imap.gmail.com'
 NEXTIVA_SENDER = 'analytics@nextiva.com'
 
@@ -90,15 +91,31 @@ def main():
     
     # 3. Parse and Clean the Data
     lines = raw_text.splitlines()
-    # Note: You may need to adjust this del count based on the live site layout
-    if len(lines) > 10:
-        del lines[:2] 
-        lines.pop()
 
+    # 3.1. Find where the table actually starts
+    try:
+        # Look for "Name" to anchor ourselves
+        anchor = lines.index("Name")
+        
+        # We want to skip the entire header row. 
+        # Since you saw 8 items in the header, we skip 8 lines starting from 'Name'.
+        cleaned_data = lines[anchor + 8:]
+        
+        print(f"Anchored at line {anchor}. Skipping headers...")
+    except ValueError:
+        # If "Name" isn't found, fallback to a safe guess 
+        # (Line 3 + 8 = 11)
+        cleaned_data = lines[11:]
+        print("Warning: 'Name' anchor not found, using fallback slice.")
+
+    # 3.2. Now run the batching on the clean data
     processed_data = []
-    for batch in batched(lines, 7):
-        if len(batch) < 7: continue
+    for batch in batched(cleaned_data, 7):
+        if len(batch) < 7:
+            continue
+        
         row = list(batch)
+        # Perform your duration conversion on the 3rd item (index 2)
         row[2] = parse_duration(row[2])
         processed_data.append(row)
 
@@ -108,6 +125,10 @@ def main():
             writer = csv.writer(f)
             writer.writerows(processed_data)
         print(f"Success! Processed {len(processed_data)} records.")
+
+    print("Fetching complete. Starting the flattening process...")
+    flatten_to_wide.flatten_to_wide()
+    print("All tables updated for Tableau.")
 
 if __name__ == "__main__":
     main()
